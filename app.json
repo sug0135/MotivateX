@@ -4,7 +4,7 @@
     "slug": "MotivateX",
     "newArchEnabled": true,
     "scheme": "react-navive-expo-router",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "entryPoint": "./App.js",
     "icon": "./assets/icon.png",
