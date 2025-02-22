@@ -13,9 +13,6 @@ install! 'cocoapods',
 
 prepare_react_native_project!
 
-# 🔹【追加】use_modular_headers! をグローバルに適用
-use_modular_headers!
-
 target 'MotivateX' do
   use_expo_modules!
 
@@ -46,13 +43,29 @@ target 'MotivateX' do
     :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
   )
 
-  # 🔹【追加】Firebase の Pod に :modular_headers => true を設定
+  # 🔹 Firebase の Pod に `:modular_headers => true` を設定
   pod 'GoogleUtilities', :modular_headers => true
   pod 'FirebaseCore', :modular_headers => true
   pod 'FirebaseCoreInternal', :modular_headers => true
   pod 'FirebaseFirestore', :modular_headers => true
   pod 'FirebaseCoreExtension', :modular_headers => true
   pod 'FirebaseFirestoreInternal', :modular_headers => true
+  pod 'nanopb', :modular_headers => true
+
+  # gRPC 関連 (modular_headers を適用しない)
+  pod 'gRPC-C++'
+  pod 'gRPC-Core'
+
+  # 🔹 gRPC の `static_library` 設定を追加
+  pre_install do |installer|
+    installer.pod_targets.each do |pod|
+      if pod.name.start_with?('gRPC')
+        def pod.build_type;
+          Pod::BuildType.static_library
+        end
+      end
+    end
+  end
 
   post_install do |installer|
     react_native_post_install(
