@@ -16,6 +16,9 @@ prepare_react_native_project!
 target 'MotivateX' do
   use_expo_modules!
 
+  # 🔹 `use_frameworks!` を `:static` に変更
+  use_frameworks! :linkage => :static
+
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
   else
@@ -33,12 +36,9 @@ target 'MotivateX' do
 
   config = use_native_modules!(config_command)
 
-  use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
-  use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
-
   use_react_native!(
     :path => config[:reactNativePath],
-    :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
+    :hermes_enabled => false,  # 🔹 JSC を使用
     :app_path => "#{Pod::Config.instance.installation_root}/..",
     :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
   )
@@ -52,17 +52,14 @@ target 'MotivateX' do
   pod 'FirebaseFirestoreInternal', :modular_headers => true
   pod 'nanopb', :modular_headers => true
 
-  # gRPC 関連 (modular_headers を適用しない)
+  # 🔹 gRPC の `static_library` 設定を修正
   pod 'gRPC-C++'
   pod 'gRPC-Core'
 
-  # 🔹 gRPC の `static_library` 設定を追加
   pre_install do |installer|
     installer.pod_targets.each do |pod|
       if pod.name.start_with?('gRPC')
-        def pod.build_type;
-          Pod::BuildType.static_library
-        end
+        pod.build_type = Pod::BuildType.static_library
       end
     end
   end
